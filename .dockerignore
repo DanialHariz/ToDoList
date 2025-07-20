@@ -1,0 +1,19 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore local env files for security
+.env
+
+# Ignore local virtual envs
+venv/
+ENV/
+
+# Node stuff (if any)
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
