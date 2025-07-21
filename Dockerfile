@@ -6,22 +6,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set workdir
+# Set working directory
 WORKDIR /app
 
-# Copy dependencies
+# Copy dependencies and install
 COPY requirements.txt ./
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy project files
+# Copy the entire app
 COPY . .
 
-# Build the Reflex static site (no --prod flag)
-RUN reflex export
+# Export static assets
+RUN reflex export --env prod
 
-# Expose Cloud Run port
+# Expose port for Cloud Run
 ENV PORT=8080
 EXPOSE 8080
 
-# Serve static site
-CMD ["python", "-m", "http.server", "8080", "--directory", ".web"]
+# Start the Reflex app server
+CMD ["reflex", "run", "--env", "prod"]
