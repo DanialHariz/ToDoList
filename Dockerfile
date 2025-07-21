@@ -24,5 +24,4 @@ RUN echo "App folder:" && pwd && echo "Files:" && ls -al
 #EXPOSE 8000
 EXPOSE 8080
 ENV PORT=8080
-CMD ["reflex", "run", "--env", "prod", "--port", "8080"]
-
+CMD ["reflex", "run", "--env", "prod", "--backend-port", "8080"]

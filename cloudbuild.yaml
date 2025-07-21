@@ -21,7 +21,8 @@ steps:
       '--platform', 'managed',
       '--allow-unauthenticated',
       '--update-secrets', 'MONGO_URI=MONGO_URI:latest',
-      '--memory', '2Gi'
+      '--memory', '2Gi',
+      '--timeout=300'
     ]
 
 options:
