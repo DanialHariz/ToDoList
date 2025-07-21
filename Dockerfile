@@ -19,7 +19,9 @@ COPY . .
 RUN ls -al /app
 RUN ls -al /app/ToDoList
 
-EXPOSE 3000
-EXPOSE 8000
+#EXPOSE 3000
+#EXPOSE 8000
+EXPOSE 8080
+ENV PORT=8080
 
 CMD ["reflex", "run", "--env", "prod"]
