@@ -20,5 +20,9 @@ steps:
       '--region', 'us-central1',
       '--platform', 'managed',
       '--allow-unauthenticated',
-      '--update-secrets', 'MONGO_URI=MONGO_URI:latest'
+      '--update-secrets', 'MONGO_URI=MONGO_URI:latest',
+      '--memory', '1Gi'
     ]
+
+options:
+  logging: CLOUD_LOGGING_ONLY
