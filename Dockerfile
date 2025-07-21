@@ -21,6 +21,7 @@ RUN ls -al /app/ToDoList
 
 #EXPOSE 3000
 #EXPOSE 8000
+WORKDIR /app/ToDoList
 EXPOSE 8080
 ENV PORT=8080
 
