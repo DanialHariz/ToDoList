@@ -1,27 +1,27 @@
 FROM python:3.11
 
-# Install OS packages
+# Install OS dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    tzdata \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Set up app directory
+# Set workdir
 WORKDIR /app
 
-COPY requirements.txt .
+# Copy dependencies
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
+# Copy project files
 COPY . .
 
-# Optional debug
-RUN echo "App folder:" && pwd && echo "Files:" && ls -al
+# Build the static web version of the app
+RUN reflex export --prod
 
-#EXPOSE 3000
-#EXPOSE 8000
-EXPOSE 8080
+# Expose Cloud Run port
 ENV PORT=8080
-CMD ["reflex", "run", "--backend-port", "8080", "--frontend-port", "8080"]
+EXPOSE 8080
+
+# Start server to serve the exported static files
+CMD ["python", "-m", "http.server", "8080", "--directory", ".web"]
