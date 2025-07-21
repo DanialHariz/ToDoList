@@ -16,12 +16,12 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project files
 COPY . .
 
-# Build the static web version of the app
-RUN reflex export --prod
+# Build the Reflex static site (no --prod flag)
+RUN reflex export
 
 # Expose Cloud Run port
 ENV PORT=8080
 EXPOSE 8080
 
-# Start server to serve the exported static files
+# Serve static site
 CMD ["python", "-m", "http.server", "8080", "--directory", ".web"]
