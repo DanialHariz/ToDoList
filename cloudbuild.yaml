@@ -1,0 +1,24 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/credible-glow-464605-s1/todolist-repo/todolist-image',
+      '.'
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'us-central1-docker.pkg.dev/credible-glow-464605-s1/todolist-repo/todolist-image'
+    ]
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', 'todolist-app',
+      '--image', 'us-central1-docker.pkg.dev/credible-glow-464605-s1/todolist-repo/todolist-image',
+      '--region', 'us-central1',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--update-secrets', 'MONGO_URI=MONGO_URI:latest'
+    ]
