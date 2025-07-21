@@ -24,4 +24,4 @@ RUN ls -al /app/ToDoList
 EXPOSE 8080
 ENV PORT=8080
 
-CMD ["reflex", "run", "--env", "prod"]
+CMD ["reflex", "run", "--env", "prod", "8080"]
