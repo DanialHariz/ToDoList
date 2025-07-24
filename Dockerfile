@@ -1,27 +1,75 @@
+# Use Python 3.11
 FROM python:3.11
 
-# Install OS dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# This Dockerfile is used to deploy a single-container Reflex app instance
+# to services like Render, Railway, Heroku, GCP, and others.
 
-# Set working directory
+# It uses a reverse proxy to serve the frontend statically and proxy to backend
+# from a single exposed port, expecting TLS termination to be handled at the
+# edge by the given platform.
+
+# If the service expects a different port, provide it here (f.e Render expects port 10000)
+ARG PORT=8080
+# Only set for local/direct access. When TLS is used, the API_URL is assumed to be the same as the frontend.
+ARG API_URL
+ENV PORT=$PORT REFLEX_API_URL=${API_URL:-http://localhost:$PORT} REFLEX_REDIS_URL=redis://localhost PYTHONUNBUFFERED=1
+
+# Install Caddy and redis server inside image
+RUN apt-get update -y && apt-get install -y caddy redis-server && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy dependencies and install
-COPY requirements.txt ./
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copy the entire app
+# Copy local context to `/app` inside container (see .dockerignore)
 COPY . .
 
-# Export static assets
-RUN reflex export --env prod
+# Install app requirements and reflex in the container
+RUN pip install -r requirements.txt
 
-# Expose port for Cloud Run
-ENV PORT=8080
-EXPOSE 8080
+# Deploy templates and prepare app
+RUN reflex init
 
-# Start the Reflex app server
-CMD ["reflex", "run", "--env", "prod"]
+# Download all npm dependencies and compile frontend
+RUN reflex export --frontend-only --no-zip && mv .web/build/client/* /srv/ && rm -rf .web
+
+# Needed until Reflex properly passes SIGTERM on backend.
+STOPSIGNAL SIGKILL
+
+EXPOSE $PORT
+
+# Apply migrations before starting the backend.
+CMD [ -d alembic ] && reflex db migrate; \
+    caddy start && \
+    redis-server --daemonize yes && \
+    exec reflex run --env prod --backend-only
+#===========================================================
+# FROM python:3.11
+
+# # OS dependencies
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     ca-certificates \
+#     curl \
+#     && rm -rf /var/lib/apt/lists/*
+
+
+# WORKDIR /app
+
+# # Copy dependencies
+# COPY requirements.txt ./
+# RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# # Copy the entire app
+# COPY . .
+
+
+# RUN reflex export --env prod
+
+# # Expose port for Cloud Run
+# ENV PORT=8080
+# EXPOSE 8080
+
+# # EXPOSE 3000
+# # EXPOSE 8000
+
+# # Start app with unified server (frontend + backend on one port)
+# #CMD ["python", "-m", "http.server", "8080", "--directory", ".web"]
+# CMD ["reflex", "run", "--env", "prod"]
